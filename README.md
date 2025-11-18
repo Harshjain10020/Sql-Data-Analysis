@@ -8,9 +8,8 @@ This repository contains my submission for the Implementation Internship assignm
 - SQL queries for data operations and reporting
 
 ## Contents
-- `assignment.pdf`: Full assignment description and solutions.
+- `assignment.pdf`: Full assignment description, solutions and screenshots of SQL query results.
 - `SQL_queries.txt`: My SQL queries written and tested.
-- `/screenshots`: Screenshots of SQL query results.
 
 ## AI Usage
 No AI tools were used to solve practical challenges. All queries and analysis were done manually.
