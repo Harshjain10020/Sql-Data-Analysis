@@ -1,0 +1,101 @@
+use xeno_assignment;
+CREATE TABLE customers (
+    customer_id INT PRIMARY KEY,
+    full_name VARCHAR(100),
+    email VARCHAR(100),
+    phone_number VARCHAR(20),
+    city VARCHAR(100),
+    signup_date DATE
+);
+
+-- Q1
+-- SELECT * FROM customers WHERE city = 'Delhi';
+
+-- Q2
+SELECT COUNT(*) FROM customers WHERE signup_date BETWEEN '2025-03-17' AND '2025-04-16';
+-- Q3
+SELECT DISTINCT city FROM customers;
+-- Q4
+SELECT city, COUNT(*) AS signups FROM customers GROUP BY city ORDER BY signups DESC LIMIT 3;
+-- Q5
+CREATE TABLE orders (
+    orderid INT PRIMARY KEY AUTO_INCREMENT,
+    customer_id INT,
+    orderdate DATE,
+    amount DECIMAL(10,2),
+    status VARCHAR(20),
+    FOREIGN KEY (customer_id) REFERENCES customers(customer_id)
+);
+INSERT INTO orders (customer_id, orderdate, amount, status) VALUES
+(251212, '2025-04-12', 749.99, 'Completed'),
+(848133, '2025-04-10', 1200.50, 'Shipped'),
+(511492, '2025-04-09', 450.00, 'Pending');
+
+SELECT * FROM customers WHERE customer_id NOT IN (SELECT customer_id FROM orders);
+
+
+-- part -2 : Data Transformation/Enrichment
+-- q1.
+
+UPDATE customers
+SET is_gmail = IF(COALESCE(email, '') LIKE '%@gmail.com', 'Yes', 'No')
+WHERE customer_id IS NOT NULL;
+SET SQL_SAFE_UPDATES = 0;
+-- Q2.
+ALTER TABLE customers ADD COLUMN first_name VARCHAR(255);
+UPDATE customers SET first_name = SUBSTRING_INDEX(full_name, ' ', 1) WHERE customer_id IS NOT NULL;
+
+-- Q3.
+ALTER TABLE customers ADD COLUMN signup_month VARCHAR(10);
+UPDATE customers SET signup_month = MONTHNAME(signup_date) WHERE customer_id IS NOT NULL;
+
+-- Q4
+SELECT DAYNAME(signup_date) AS signup_day, COUNT(*) AS gmail_signups
+FROM customers
+WHERE is_gmail = 'Yes'
+GROUP BY signup_day;
+
+-- Q5
+CREATE TABLE vip_customers AS
+SELECT * FROM customers
+WHERE city IN ('Delhi', 'Mumbai', 'Bangalore')
+AND signup_date BETWEEN DATE_SUB('2025-04-16', INTERVAL 60 DAY) AND '2025-04-16';
+
+
+select * from vip_customers;
+
+-- part 3: Analytics & Reporting
+SELECT
+  DATE_FORMAT(signup_date, '%Y-%m') AS signup_month,
+  COUNT(*) AS signup_count
+FROM customers
+WHERE signup_date >= DATE_SUB('2025-04-16', INTERVAL 6 MONTH)
+GROUP BY DATE_FORMAT(signup_date, '%Y-%m')
+ORDER BY signup_month;
+
+-- q2.
+SELECT city, COUNT(*) AS customer_count
+FROM customers
+GROUP BY city
+HAVING customer_count > 20;
+
+-- q3.
+SELECT signup_date, COUNT(*) AS signup_count
+FROM customers
+GROUP BY signup_date
+ORDER BY signup_count DESC
+LIMIT 1;
+
+-- q4. 
+-- Step 1: Add a new column for signup day
+ALTER TABLE customers ADD COLUMN signup_day VARCHAR(20);
+UPDATE customers SET signup_day = DAYNAME(signup_date) WHERE customer_id IS NOT NULL;
+
+-- step 2: Find the day with the most signups
+SELECT signup_day, COUNT(*) AS signup_count
+FROM customers
+GROUP BY signup_day
+ORDER BY signup_count DESC
+LIMIT 1;
+
+select * from customers
